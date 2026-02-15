@@ -12654,7 +12654,7 @@ LevSel_IconTable:
 	dc.b   6,6	;6	CNZ
 	dc.b   2,2	;8	HTZ
 	dc.b   5,5	;$A	MCZ
-	dc.b   4,4	;$C	OOZ
+	dc.b   3,4	;$C	OOZ		;Changed Act's 1 icon id to 3 for hidden palace
 	dc.b   1,1,1	;$E	MTZ
 	dc.b   9	;$11	SCZ
 	dc.b  $A	;$12	WFZ
