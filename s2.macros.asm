@@ -34,8 +34,8 @@ dmaFillVRAM macro byte,addr,length
 	move.w	#$8F01,(a5) ; VRAM pointer increment: $0001
 	move.l	#(($9400|((((length)-1)&$FF00)>>8))<<16)|($9300|(((length)-1)&$FF)),(a5) ; DMA length ...
 	move.w	#$9780,(a5) ; VRAM fill
-	move.l	#vdpComm(addr,VRAM,DMA),(a5) ; Start at ...
-	move.w	#(byte)|((byte)<<8),(VDP_data_port).l ; Fill with byte
+	move.l	#$40000080|(((addr)&$3FFF)<<16)|(((addr)&$C000)>>14),(a5) ; Start at ...
+	move.w	#(byte)<<8,(VDP_data_port).l ; Fill with byte
 .loop:	move.w	(a5),d1
 	btst	#1,d1
 	bne.s	.loop ; busy loop until the VDP is finished filling...
@@ -43,16 +43,16 @@ dmaFillVRAM macro byte,addr,length
     endm
 
 ; calculates initial loop counter value for a dbf loop
-; that writes n bytes total at x bytes per iteration
-bytesToXcnt function n,x,n/x-1
-
-; calculates initial loop counter value for a dbf loop
 ; that writes n bytes total at 4 bytes per iteration
-bytesToLcnt function n,bytesToXcnt(n,4)
+bytesToLcnt function n,n>>2-1
 
 ; calculates initial loop counter value for a dbf loop
 ; that writes n bytes total at 2 bytes per iteration
-bytesToWcnt function n,bytesToXcnt(n,2)
+bytesToWcnt function n,n>>1-1
+
+; calculates initial loop counter value for a dbf loop
+; that writes n bytes total at x bytes per iteration
+bytesToXcnt function n,x,n/x-1
 
 ; fills a region of 68k RAM with 0
 clearRAM macro startaddr,endaddr
@@ -167,32 +167,32 @@ offsetTableEntry macro ptr
 zoneOrderedTable macro entryLen,zoneEntries,{INTLABEL}
 __LABEL__ label *
 ; set some global variables
-.zone_table_name := "__LABEL__"
-.zone_table_addr := *
-.zone_entry_len := entryLen
-.zone_entries := zoneEntries
-.zone_entries_left := 0
-.cur_zone_id := 0
-.cur_zone_str := "0"
+zone_table_name := "__LABEL__"
+zone_table_addr := *
+zone_entry_len := entryLen
+zone_entries := zoneEntries
+zone_entries_left := 0
+cur_zone_id := 0
+cur_zone_str := "0"
     endm
 
 zoneOrderedOffsetTable macro entryLen,zoneEntries,{INTLABEL}
+current_offset_table := __LABEL__
 __LABEL__ zoneOrderedTable entryLen,zoneEntries
-.current_offset_table := __LABEL__
     endm
 
 ; macro to declare one or more entries in a zone-ordered table
 zoneTableEntry macro value
 	if "value"<>""
-	    if .zone_entries_left
+	    if zone_entries_left
 		dc.ATTRIBUTE value
-.zone_entries_left := .zone_entries_left-1
+zone_entries_left := zone_entries_left-1
 	    else
-		!org .zone_table_addr+zone_id_{.cur_zone_str}*.zone_entry_len*.zone_entries
+		!org zone_table_addr+zone_id_{cur_zone_str}*zone_entry_len*zone_entries
 		dc.ATTRIBUTE value
-.zone_entries_left := .zone_entries-1
-.cur_zone_id := .cur_zone_id+1
-.cur_zone_str := "\{.cur_zone_id}"
+zone_entries_left := zone_entries-1
+cur_zone_id := cur_zone_id+1
+cur_zone_str := "\{cur_zone_id}"
 	    endif
 	    shift
 	    zoneTableEntry.ATTRIBUTE ALLARGS
@@ -201,30 +201,30 @@ zoneTableEntry macro value
 
 ; macro to declare one or more BINCLUDE entries in a zone-ordered table
 zoneTableBinEntry macro numEntries,path
-	if .zone_entries_left
+	if zone_entries_left
 	    BINCLUDE path
-.zone_entries_left := .zone_entries_left-numEntries
+zone_entries_left := zone_entries_left-numEntries
 	else
-	    !org .zone_table_addr+zone_id_{.cur_zone_str}*.zone_entry_len*.zone_entries
+	    !org zone_table_addr+zone_id_{cur_zone_str}*zone_entry_len*zone_entries
 	    BINCLUDE path
-.zone_entries_left := .zone_entries-numEntries
-.cur_zone_id := .cur_zone_id+1
-.cur_zone_str := "\{.cur_zone_id}"
+zone_entries_left := zone_entries-numEntries
+cur_zone_id := cur_zone_id+1
+cur_zone_str := "\{cur_zone_id}"
 	endif
     endm
 
 ; macro to declare one entry in a zone-ordered offset table
 zoneOffsetTableEntry macro value
-	zoneTableEntry.ATTRIBUTE value-.current_offset_table
+	zoneTableEntry.ATTRIBUTE value-current_offset_table
     endm
 
 ; macro which sets the PC to the correct value at the end of a zone offset table and checks if the correct
 ; number of entries were declared
 zoneTableEnd macro
-	if (.cur_zone_id<>no_of_zones)&&(MOMPASS=1)
-	    message "Warning: Table \{.zone_table_name} has \{.cur_zone_id/1.0} entries, but it should have \{(no_of_zones)/1.0} entries"
+	if (cur_zone_id<>no_of_zones)&&(MOMPASS=1)
+	    message "Warning: Table \{zone_table_name} has \{cur_zone_id/1.0} entries, but it should have \{(no_of_zones)/1.0} entries"
 	endif
-	!org .zone_table_addr+.cur_zone_id*.zone_entry_len*.zone_entries
+	!org zone_table_addr+cur_zone_id*zone_entry_len*zone_entries
     endm
 
 ; macro to declare sub-object data
@@ -263,58 +263,17 @@ make_art_tile_2p function addr,pal,pri,((pri&1)<<15)|((pal&3)<<13)|((addr&tile_m
 make_block_tile function addr,flx,fly,pal,pri,((pri&1)<<15)|((pal&3)<<13)|((fly&1)<<12)|((flx&1)<<11)|(addr&tile_mask)
 make_block_tile_2p function addr,flx,fly,pal,pri,((pri&1)<<15)|((pal&3)<<13)|((fly&1)<<12)|((flx&1)<<11)|((addr&tile_mask)>>1)
 tiles_to_bytes function addr,((addr&$7FF)<<5)
-tiles_to_words function addr,tiles_to_bytes(addr)/2
-tiles_to_longwords function addr,tiles_to_bytes(addr)/4
 make_block_tile_pair function addr,flx,fly,pal,pri,((make_block_tile(addr,flx,fly,pal,pri)<<16)|make_block_tile(addr,flx,fly,pal,pri))
 make_block_tile_pair_2p function addr,flx,fly,pal,pri,((make_block_tile_2p(addr,flx,fly,pal,pri)<<16)|make_block_tile_2p(addr,flx,fly,pal,pri))
 
-; function to calculate the location of a tile in plane mappings
-planeLoc function width,col,line,(((width * line) + col) * 2)
+; function to calculate the location of a tile in plane mappings with a width of 64 cells
+planeLocH40 function col,line,(($80 * line) + (2 * col))
 
-; The VDP's sprite coordinates place the top-left pixel of the screen at $80,$80,
-; these constants are to help deobfuscate that.
-spriteScreenPositionX function pos,sprite_left_boundary+pos
-spriteScreenPositionY function pos,sprite_top_boundary+pos
-spriteScreenPositionY2P function pos,sprite_top_boundary_2p+pos
-
-spriteScreenPositionXCentered function pos,spriteScreenPositionX(screen_width/2+(pos))
-spriteScreenPositionYCentered function pos,spriteScreenPositionY(screen_height/2+(pos))
+; function to calculate the location of a tile in plane mappings with a width of 128 cells
+planeLocH80 function col,line,(($100 * line) + (2 * col))
 
 ; macro formatting text for the game's menus
 menutxt	macro	text
 	dc.b	strlen(text)-1
 	dc.b	text
-	rev02even
 	endm
-
-childObjectData macro objoff, objectID, subtype
-	dc.w	objoff
-	dc.b	objectID, subtype
-	endm
-
-; macro to simplify editing the demo scripts
-demoinput macro buttons,duration
-btns_mask := 0
-  irpc btn,"buttons"
-    switch "btn"
-    case "U"
-btns_mask := btns_mask|button_up_mask
-    case "D"
-btns_mask := btns_mask|button_down_mask
-    case "L"
-btns_mask := btns_mask|button_left_mask
-    case "R"
-btns_mask := btns_mask|button_right_mask
-    case "A"
-btns_mask := btns_mask|button_A_mask
-    case "B"
-btns_mask := btns_mask|button_B_mask
-    case "C"
-btns_mask := btns_mask|button_C_mask
-    case "S"
-btns_mask := btns_mask|button_start_mask
-    elsecase
-    endcase
-  endm
-	dc.b	btns_mask,duration-1
- endm
