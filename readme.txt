@@ -1,7 +1,7 @@
 An Version of the Sonic 2 Disassembly that includes Hidden Palace over Oil Ocean Zone Act 1 in the level select
 I do not take credit for all of this, the tutorial was made by Clownacy
 Things i couldn't restore
-Crocobot as it corrupts some of the objects in the level
+Crocobot as it corrupts some of the objects in the level (Please make an issue page to help me fix this)
 
 A disassembly of Sonic the Hedgehog 2 for the Sega Mega Drive/Genesis.
 
