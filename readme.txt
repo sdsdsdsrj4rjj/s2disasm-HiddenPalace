@@ -1,4 +1,4 @@
-An version of the Sonic 2 Disassembly with Hidden Palace Zone restored (besides Crocobot, he corrupts the watterfalls and bridges, make an issue to help me fix it) that replaces Oil Ocean Zone Act 1 in level select and has semi-Sonlvl compatibility.
+An version of the Sonic 2 Disassembly with Hidden Palace Zone restored (besides Crocobot, he corrupts the waterfalls and bridges, make an issue to help me fix it) that replaces Oil Ocean Zone Act 1 in level select and has semi-Sonlvl compatibility.
 
 A disassembly of Sonic the Hedgehog 2 for the Sega Mega Drive/Genesis.
 
