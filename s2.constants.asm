@@ -7,6 +7,8 @@
 Size_of_DAC_samples =		$2F00
 Size_of_SEGA_sound =		$6174
 Size_of_Snd_driver_guess =	$F64 ; approximate post-compressed size of the Z80 sound driver
+Page1_RAM =			Chunk_Table
+Page2_RAM =			Page1_RAM+$8C0
 
 
 Obj_Id                         = id

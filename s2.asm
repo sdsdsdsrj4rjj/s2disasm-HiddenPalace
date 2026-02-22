@@ -12238,7 +12238,7 @@ MenuScreen_LevelSelect:
 	bsr.w	LevelSelect_DrawSoundNumber
 
 	; Load zone icon
-	lea	(Chunk_Table+$8C0).l,a1
+	lea	(Page1_RAM+$8C0).l,a1
 	lea	(MapEng_LevSelIcon).l,a0
 	move.w	#make_art_tile(ArtTile_ArtNem_LevelSelectPics,0,0),d0
 	bsr.w	EniDec
@@ -12353,27 +12353,28 @@ LevelSelect_Return:
 ;Misc_9454:
 LevelSelect_Order:
 	dc.w	emerald_hill_zone_act_1
-	dc.w	emerald_hill_zone_act_2	; 1
+	dc.w	emerald_hill_zone_act_2		; 1
 	dc.w	chemical_plant_zone_act_1	; 2
 	dc.w	chemical_plant_zone_act_2	; 3
-	dc.w	aquatic_ruin_zone_act_1	; 4
-	dc.w	aquatic_ruin_zone_act_2	; 5
-	dc.w	casino_night_zone_act_1	; 6
-	dc.w	casino_night_zone_act_2	; 7
-	dc.w	hill_top_zone_act_1	; 8
-	dc.w	hill_top_zone_act_2	; 9
-	dc.w	mystic_cave_zone_act_1	; 10
-	dc.w	mystic_cave_zone_act_2	; 11
-	dc.w	hidden_palace_zone_act_1	; 12
-	dc.w	oil_ocean_zone_act_2	; 13
-	dc.w	metropolis_zone_act_1	; 14
-	dc.w	metropolis_zone_act_2	; 15
-	dc.w	metropolis_zone_act_3	; 16
-	dc.w	sky_chase_zone_act_1	; 17
-	dc.w	wing_fortress_zone_act_1	; 18
-	dc.w	death_egg_zone_act_1	; 19
-	dc.w	$4000	; 20 - special stage
-	dc.w	$FFFF	; 21 - sound test
+	dc.w	aquatic_ruin_zone_act_1		; 4
+	dc.w	aquatic_ruin_zone_act_2		; 5
+	dc.w	casino_night_zone_act_1		; 6
+	dc.w	casino_night_zone_act_2		; 7
+	dc.w	hill_top_zone_act_1		; 8
+	dc.w	hill_top_zone_act_2		; 9
+	dc.w	mystic_cave_zone_act_1		; 10
+	dc.w	mystic_cave_zone_act_2		; 11
+	dc.w	oil_ocean_zone_act_1		; 12
+	dc.w	oil_ocean_zone_act_2		; 13
+	dc.w	hidden_palace_zone_act_1		; 14
+	dc.w	metropolis_zone_act_1		; 15
+	dc.w	metropolis_zone_act_2		; 16
+	dc.w	metropolis_zone_act_3		; 17
+	dc.w	sky_chase_zone_act_1		; 18
+	dc.w	wing_fortress_zone_act_1	; 19
+	dc.w	death_egg_zone_act_1		; 20
+	dc.w	$4000				; 21 - special stage
+	dc.w	$FFFF				; 22 - sound test
 ; ===========================================================================
 
 ;loc_9480:
@@ -12422,7 +12423,7 @@ LevSelControls:
 	beq.s	+
 	subq.w	#1,d0	; decrease by 1
 	bcc.s	+	; >= 0?
-	moveq	#$15,d0	; set to $15
+	moveq	#$16,d0	; set to $15
 
 +
 	btst	#button_down,d1
@@ -12438,7 +12439,7 @@ LevSelControls:
 ; ===========================================================================
 ; loc_9522:
 LevSelControls_CheckLR:
-	cmpi.w	#$15,(Level_select_zone).w	; are we in the sound test?
+	cmpi.w	#$16,(Level_select_zone).w	; are we in the sound test?
 	bne.s	LevSelControls_SwitchSide	; no
 	move.w	(Sound_test_sound).w,d0
 	move.b	(Ctrl_1_Press).w,d1
@@ -12491,28 +12492,29 @@ LevSelControls_SwitchSide:	; not in soundtest, not up/down pressed
 ; ===========================================================================
 ;byte_95A2:
 LevelSelect_SwitchTable:
-	dc.b $E
-	dc.b $F		; 1
-	dc.b $11	; 2
-	dc.b $11	; 3
-	dc.b $12	; 4
-	dc.b $12	; 5
-	dc.b $13	; 6
-	dc.b $13	; 7
-	dc.b $14	; 8
-	dc.b $14	; 9
-	dc.b $15	; 10
-	dc.b $15	; 11
+	dc.b $F
+	dc.b $10	; 1
+	dc.b $12	; 2
+	dc.b $12	; 3
+	dc.b $13	; 4
+	dc.b $13	; 5
+	dc.b $14	; 6
+	dc.b $14	; 7
+	dc.b $15	; 8
+	dc.b $15	; 9
+	dc.b $16	; 10
+	dc.b $16	; 11
 	dc.b $C		; 12
 	dc.b $D		; 13
-	dc.b 0		; 14
-	dc.b 1		; 15
+	dc.b $E		; 14 HPZ
+	dc.b 0		; 15
 	dc.b 1		; 16
-	dc.b 2		; 17
-	dc.b 4		; 18
-	dc.b 6		; 19
-	dc.b 8		; 20
-	dc.b $A		; 21
+	dc.b 1		; 17
+	dc.b 2		; 18
+	dc.b 4		; 19
+	dc.b 6		; 20
+	dc.b 8		; 21
+	dc.b $A		; 22
 	even
 ; ===========================================================================
 
@@ -12573,7 +12575,7 @@ LevelSelect_MarkFields:
 	move.w	d0,(a6)
 
 +
-	cmpi.w	#$15,(Level_select_zone).w
+	cmpi.w	#$16,(Level_select_zone).w
 	bne.s	+	; rts
 	bsr.w	LevelSelect_DrawSoundNumber
 +
@@ -12654,7 +12656,8 @@ LevSel_IconTable:
 	dc.b   6,6	;6	CNZ
 	dc.b   2,2	;8	HTZ
 	dc.b   5,5	;$A	MCZ
-	dc.b   3,4	;$C	OOZ		;Changed Act's 1 icon id to 3 for hidden palace
+	dc.b   4,4	;$C	OOZ
+	dc.b   3	;	HPZ
 	dc.b   1,1,1	;$E	MTZ
 	dc.b   9	;$11	SCZ
 	dc.b  $A	;$12	WFZ
@@ -12679,6 +12682,7 @@ LevSel_MarkTable:	; 4 bytes per level select entry
 	dc.b $12,  6,$13,$24
 	dc.b $15,  6,$15,$24	;$C
 	dc.b $15,  6,$16,$24
+	dc.b $18,  6,$18,$24
 ; --- second column ---
 	dc.b   3,$2C,  3,$48
 	dc.b   3,$2C,  4,$48
