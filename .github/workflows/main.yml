@@ -18,8 +18,7 @@ jobs:
 
       - name: Fix Permissions for Build Tools
         run: |
-          chmod +x build_tools/Linux-x86_64/asl
-          chmod +x build_tools/Linux-x86_64/p2bin
+          chmod -R +x build_tools/
 
       - name: Build ROM
         run: |
