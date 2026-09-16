@@ -1,0 +1,27 @@
+name: Build Sonic 2 ROM
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Lua and Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.3 build-essential
+
+      - name: Build ROM
+        run: |
+          lua5.3 build.lua
+
+      - name: Upload Built ROM
+        uses: actions/upload-artifact@v4
+        with:
+          name: s2built.bin
+          path: s2built.bin
