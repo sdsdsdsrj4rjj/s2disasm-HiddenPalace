@@ -16,6 +16,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lua5.3 build-essential
 
+      - name: Fix Permissions for Build Tools
+        run: |
+          chmod +x build_tools/Linux-x86_64/asl
+          chmod +x build_tools/Linux-x86_64/p2bin
+
       - name: Build ROM
         run: |
           lua5.3 build.lua
